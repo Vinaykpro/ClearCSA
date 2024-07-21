@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearCSA - Dump Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #333;
+            color: #fff;
+        }
+        .maincontainer {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .menu li {
+            margin-bottom: 10px;
+        }
+        .menu li a {
+            display: block;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .menu li a:hover {
+            background-color: #0056b3;
+        }
+        
+        .container, .result {
+            display:none;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            padding:10px;
+        }
+        .options li label {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .options li input[type="checkbox"],
+        .options li input[type="radio"] {
+            margin: 0;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .buttons button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: column;
+            }
+            .buttons button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        .correct {
+            border-radius: 7px;
+            animation: fade 0.5s ease-in;
+            background-color: #50C878; /* Lighten green */
+        }
+        @keyframes fade {
+            0% {
+                opacity: 100;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        .wrong {
+            border-radius: 7px;
+            animation: fade 0.5s ease-in;
+            background-color: #dc3545;
+        }
+        .status {
+            background-color: #555;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="maincontainer">
+        <h1 style="text-align: center;">CSA Dumps Quiz</h1>
+        <ul class="menu">
+            <li onclick="setQ(10)"><a>Random 10Q</a></li>
+            <li onclick="setQ(25)"><a>Random 25Q</a></li>
+            <li onclick="setQ(50)"><a>Random 50Q</a></li>
+            <li onclick="setQ(100)"><a>Random 100Q</a></li>
+            <li onclick="setQ(358)"><a>Random 358Q</a></li>
+            <li onclick="startInfiniteRandom()"><a>Infinite Random</a></li>
+            <li onclick="startSequential()"><a>358Q in Sequence</a></li>
+            <li onclick="studyMCQs()"><a>Study MCQs</a></li>
+        </ul>
+        <div>
+            <label>
+                <input type="checkbox" id="jumbleOptions" checked>
+                Jumble options
+            </label>
+        </div>
+    </div>
+    <div class="container">
+        <div class="status" id="status">
+            Question <span id="currentQuestion">1</span> of <span id="totalQuestions">4</span> | Score: <span id="score">0</span>
+        </div>
+        <div id="quiz-container">
+            <!-- Question and options will be inserted here -->
+        </div>
+        <div class="buttons">
+            <button id="prevBtn" onclick="prevQuestion()" disabled>Previous</button>
+            <button id="nextBtn" onclick="checkAnswer()" disabled>Next</button>
+        </div>
+    </div>
+    <div class="result">
+        <h2>Your Score: <span class="score">0</span></h2>
+        <button onclick="backToMenu()">Back to Main Menu</button>
+    </div>
+    <script>
+        function setQ(n) {
+            let randomArray = createRandomArray(n, quizData.length);
+            selectedQuestions = randomArray.map(i => quizData[i]);
+            startQuiz();
+        }
+
+        function createRandomArray(n, m) { 
+            if (n > m) throw new Error("n cannot be greater than m"); 
+            const array = Array.from({ length: m }, (_, i) => i); 
+            for (let i = array.length - 1; i > 0; i--) { 
+                const j = Math.floor(Math.random() * (i + 1)); 
+                [array[i], array[j]] = [array[j], array[i]]; 
+            } 
+            return array.slice(0, n); 
+        }
+        function startSequential() {
+            selectedQuestions = [...quizData];
+            startQuiz();
+        }
+
+        function startInfiniteRandom() {
+            selectedQuestions = [];
+            document.querySelector('.maincontainer').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            loadInfiniteRandomQuestion();
+        }
+
+        function loadInfiniteRandomQuestion() {
+            let randomIndex = Math.floor(Math.random() * quizData.length);
+            selectedQuestions = [quizData[randomIndex]];
+            currentQuestionIndex = 0;
+            loadQuestion();
+            updateStatus();
+        }
+
+        (function() {
+    var currentPageUrl = window.location.href;
+    var apiUrl = 'https://vinaykpro.github.io/ClearCSA/';
+
+    if (currentPageUrl !== apiUrl) {
+        var overlayElement = document.createElement('div');
+        overlayElement.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+
+        var contentElement = document.createElement('div');
+        contentElement.style.cssText = 'max-width: 600px; padding: 20px; border-radius: 8px; background-color: #444; box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); text-align: center; color: white; font-family: Arial, sans-serif;';
+
+        var messageParagraph1 = document.createElement('p');
+        messageParagraph1.textContent = 'This is not the original page.';
+
+        var messageParagraph2 = document.createElement('p');
+        var linkElement = document.createElement('a');
+        linkElement.href = apiUrl;
+        linkElement.style.color = '#007BFF';
+        linkElement.textContent = 'Click here to visit the original page';
+        messageParagraph2.appendChild(linkElement);
+
+        contentElement.appendChild(messageParagraph1);
+        contentElement.appendChild(messageParagraph2);
+        overlayElement.appendChild(contentElement);
+
+        document.body.appendChild(overlayElement);
+    }
+})();
+        
+        const quizData = [
+  {
+    "question_text": "A Service Catalog may include which of the following components?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Order Guides, Exchange Rates, Calendars"},
+      {"option_id": "B", "option_text": "Order Guides, Catalog Items, and Interceptors"},
+      {"option_id": "C", "option_text": "Catalog Items, Asset Contracts, Task Surveys"},
+      {"option_id": "D", "option_text": "Record Producers, Order Guides, and Catalog Item"}
+    ],
+    "correct_options": ["D"]
+  },
+  {
+    "question_text": "Which one of the following statements applies to a set of fields when they are coalesced during an import?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "If a match is found using the coalesce fields, the existing record is updated with the information being imported"},
+      {"option_id": "B", "option_text": "If a match is not found using the coalesce fields, the system does not create a Transform Map"},
+      {"option_id": "C", "option_text": "If a match is found using the coalesce fields, the system creates a new record"},
+      {"option_id": "D", "option_text": "If a match is not found using the coalesce fields, the existing record is updated with the information being imported"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "As it relates to ServiceNow reporting, which of the following statements describes what a metric can do?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A metric is a report gauge used on homepages to display real-time data"},
+      {"option_id": "B", "option_text": "A metric is a time measurement used to report the effectiveness of workflows and SLAs"},
+      {"option_id": "C", "option_text": "A metric is used to measure and evaluate the effectiveness of IT service management processes"},
+      {"option_id": "D", "option_text": "A metric is a comparative measurement used to report the effectiveness of flows and SLAs"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "The display sequence is controlled in a Service Catalog Item using which of the following?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "The Default Value field in the Catalog Item form"},
+      {"option_id": "B", "option_text": "The Sequence field in the Catalog Item form"},
+      {"option_id": "C", "option_text": "The Order field in the Variable form"},
+      {"option_id": "D", "option_text": "The Choice field in the Variable form"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "Reports can be created from which different places in the platform? (Choose two.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "List column heading"},
+      {"option_id": "B", "option_text": "Metrics module"},
+      {"option_id": "C", "option_text": "Statistics module"},
+      {"option_id": "D", "option_text": "View / Run module"}
+    ],
+    "correct_options": ["A", "D"]
+  },
+  {
+    "question_text": "Knowledge Base Search results can be sorted by which of the following? (Choose three.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Most recent update"},
+      {"option_id": "B", "option_text": "Popularity"},
+      {"option_id": "C", "option_text": "Relevancy"},
+      {"option_id": "D", "option_text": "Manager assignment"},
+      {"option_id": "E", "option_text": "Number of views"}
+    ],
+    "correct_options": ["A", "C", "E"]
+  },
+  {
+    "question_text": "What is the path an Administrator could take to view the fulfillment stage task list for an order placed by a user?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "RITM (Number)>REQ (Number)>PROCUREMENT (Number)"},
+      {"option_id": "B", "option_text": "REQ (Number)>RITM (Number)>PROCUREMENT (Number)"},
+      {"option_id": "C", "option_text": "REQ (Number)>RITM (Number)>TASK (Number)"},
+      {"option_id": "D", "option_text": "FULFILLMENT (Number)>RITM (Number)>TASK (Number)"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "Which term refers to application menus and modules which you may want to access quickly and often?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Breadcrumb"},
+      {"option_id": "B", "option_text": "Favorite"},
+      {"option_id": "C", "option_text": "Tag"},
+      {"option_id": "D", "option_text": "Bookmark"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "What is generated from the Service Catalog once a user places an order for an item or service?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A change request"},
+      {"option_id": "B", "option_text": "An Order Guide"},
+      {"option_id": "C", "option_text": "A request"},
+      {"option_id": "D", "option_text": "An SLA"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "From the User menu, which actions can a user select? (Choose three.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Send Notifications"},
+      {"option_id": "B", "option_text": "Log Out ServiceNow"},
+      {"option_id": "C", "option_text": "Elevate Roles"},
+      {"option_id": "D", "option_text": "Impersonate Users"},
+      {"option_id": "E", "option_text": "Order from Service Catalog"},
+      {"option_id": "F", "option_text": "Approve Records"}
+    ],
+    "correct_options": ["B", "C", "E"]
+  },
+  {
+    "question_text": "Buttons, form links, and context menu items are all examples of what type of functionality?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Business Rule"},
+      {"option_id": "B", "option_text": "UI Action"},
+      {"option_id": "C", "option_text": "Client Script"},
+      {"option_id": "D", "option_text": "UI Policy"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "Which of the following is true of Service Catalog Items in relation to the Service Catalog?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "They run behind the scenes."},
+      {"option_id": "B", "option_text": "They are the building blocks."},
+      {"option_id": "C", "option_text": "They are optional."},
+      {"option_id": "D", "option_text": "They provide options."}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "Table Access Control rules are processed in the following order:",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "any table name (wildcard), parent table name, table name"},
+      {"option_id": "B", "option_text": "table name, parent table name, any table name (wildcard)"},
+      {"option_id": "C", "option_text": "parent table name, table name, any table name (wildcard)"},
+      {"option_id": "D", "option_text": "any table name (wildcard), table name, parent table name"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "What is the platform name for the User table?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "u_users"},
+      {"option_id": "B", "option_text": "sys_users"},
+      {"option_id": "C", "option_text": "x_users"},
+      {"option_id": "D", "option_text": "sys_user"}
+    ],
+    "correct_options": ["D"]
+  },
+  {
+    "question_text": "A REQ number in the Service Catalog represents...",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "the order number."},
+      {"option_id": "B", "option_text": "the stage."},
+      {"option_id": "C", "option_text": "the task to complete."},
+      {"option_id": "D", "option_text": "the individual item in the order."}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which would NOT appear in the History section of the Application Navigator?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Records"},
+      {"option_id": "B", "option_text": "UI Pages"},
+      {"option_id": "C", "option_text": "Lists"},
+      {"option_id": "D", "option_text": "Forms"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "Which one of the following statements is a recommendation from ServiceNow about Update Sets?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Avoid using the Default Update set as an Update Set for moving customizations from instance to instance"},
+      {"option_id": "B", "option_text": "Before moving customizations from instance to instance with Update Sets, ensure that both instances are different versions"},
+      {"option_id": "C", "option_text": "Use the Baseline Update Set to store the contents of items after they are changed the first time"},
+      {"option_id": "D", "option_text": "Once an Update Set is closed as 'Complete', change it back to 'In Progress' until it is applied to another instance"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which of the following is used to initiate a flow?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A Trigger"},
+      {"option_id": "B", "option_text": "Core Action"},
+      {"option_id": "C", "option_text": "A spoke"},
+      {"option_id": "D", "option_text": "An Event"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "For Administrators creating new Service Catalog items, what is a characteristic they should know about Service Catalog variables?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Service Catalog variables can only be used in Record Producers"},
+      {"option_id": "B", "option_text": "Service Catalog variables can only be used in Order Guides"},
+      {"option_id": "C", "option_text": "Service Catalog variables cannot affect the order price"},
+      {"option_id": "D", "option_text": "Service Catalog variables are global by default"}
+    ],
+    "correct_options": ["D"]
+  },
+  {
+    "question_text": "Which one of the following statements is true about Column Context Menus?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "It displays actions such as creating quick reports, configuring the list, and exporting data"},
+      {"option_id": "B", "option_text": "It displays actions related to filtering options, assigning tags, and search"},
+      {"option_id": "C", "option_text": "It displays actions related to viewing and filtering the entire list"},
+      {"option_id": "D", "option_text": "It displays actions such as view form, view related task, and add relationship"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which ServiceNow products can be used to discover and populate the CMDB? (Choose two.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Discovery"},
+      {"option_id": "B", "option_text": "IntegrationHub ETL"},
+      {"option_id": "C", "option_text": "Finder"},
+      {"option_id": "D", "option_text": "CMDB Plug-in"},
+      {"option_id": "E", "option_text": "CMDB Integration Dashboard"}
+    ],
+    "correct_options": ["A", "B"]
+  },
+  {
+    "question_text": "When using the Load Data and Transform Map process, what is the Mapping Assist used for?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Mapping fields using the Import Log"},
+      {"option_id": "B", "option_text": "Mapping fields using Transform History"},
+      {"option_id": "C", "option_text": "Mapping fields using an SLA"},
+      {"option_id": "D", "option_text": "Mapping fields using a Field Map"}
+    ],
+    "correct_options": ["D"]
+  },
+  {
+    "question_text": "Which one of the following statements describes the contents of the Configuration Management Database (CMDB)?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "The CMDB contains data about tangible and intangible business assets"},
+      {"option_id": "B", "option_text": "The CMDB contains the Business Rules that direct the intangible, configurable assets used by a company"},
+      {"option_id": "C", "option_text": "The CMDB archives all Service Management PaaS equipment metadata and usage statistics"},
+      {"option_id": "D", "option_text": "The CMDB contains ITIL process data pertaining to configuration items"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "In what order should filter elements be specified?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Field, Operator, then Value"},
+      {"option_id": "B", "option_text": "Field, Operator, then Condition"},
+      {"option_id": "C", "option_text": "Operator, Condition, then Value"},
+      {"option_id": "D", "option_text": "Value, Operator, then Field"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which statement is true about business rules?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A business rule must run before a database action occurs"},
+      {"option_id": "B", "option_text": "A business rule can be a piece of Javascript"},
+      {"option_id": "C", "option_text": "A business rule must not run before a database action occurs"},
+      {"option_id": "D", "option_text": "A business rule monitors fields on a form"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "Which of the following are a type of client scripts supported in ServiceNow? (Choose four.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "onSubmit"},
+      {"option_id": "B", "option_text": "onUpdate"},
+      {"option_id": "C", "option_text": "onCellEdit"},
+      {"option_id": "D", "option_text": "onLoad"},
+      {"option_id": "E", "option_text": "onEdit"},
+      {"option_id": "F", "option_text": "onChange"},
+      {"option_id": "G", "option_text": "onSave"}
+    ],
+    "correct_options": ["A", "C", "D", "F"]
+  },
+  {
+    "question_text": "Which type of tables may be extended by other tables, but do not extend another table?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Base Tables"},
+      {"option_id": "B", "option_text": "Core Tables"},
+      {"option_id": "C", "option_text": "Extended Tables"},
+      {"option_id": "D", "option_text": "Custom Tables"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which of the following statement describes the purpose of an Order Guide?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Order Guides restrict the number of items in an order to only one item per request"},
+      {"option_id": "B", "option_text": "Order Guide provide a list of guidelines for Administrators on how to set up item variables"},
+      {"option_id": "C", "option_text": "Order Guide provide the ability to order multiple, related items as one request"},
+      {"option_id": "D", "option_text": "Order Guides take the user directly to the checkout without prompting for information"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "Which tool is used to have conversations with logged-in users in real-time?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Connect Chat"},
+      {"option_id": "B", "option_text": "Now Messenger"},
+      {"option_id": "C", "option_text": "User Presence"},
+      {"option_id": "D", "option_text": "Comments"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which of the following concepts are associated with the ServiceNow CMDB? (Choose four.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Service Processes"},
+      {"option_id": "B", "option_text": "User Permissions"},
+      {"option_id": "C", "option_text": "Tables and Fields"},
+      {"option_id": "D", "option_text": "A Database"},
+      {"option_id": "E", "option_text": "The Dependency View"}
+    ],
+    "correct_options": ["A", "C", "D", "E"]
+  },
+  {
+    "question_text": "What is a formatter? Select one of the following.",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A formatter allows you to configure applications on your instance"},
+      {"option_id": "B", "option_text": "A formatter is a form element used to display information that is not a field in the record"},
+      {"option_id": "C", "option_text": "A formatter allows you to populate fields automatically"},
+      {"option_id": "D", "option_text": "A formatter is a set of conditions applied to a table to help find and work with data"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "When searching using the App Navigator search field, what can be returned? (Choose four.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Names of Applications and Modules"},
+      {"option_id": "B", "option_text": "Names of Modules"},
+      {"option_id": "C", "option_text": "Names of Applications"},
+      {"option_id": "D", "option_text": "Favorites"},
+      {"option_id": "E", "option_text": "History Records"},
+      {"option_id": "F", "option_text": "Titles of Dashboard Gauges"}
+    ],
+    "correct_options": ["A", "B", "C", "D"]
+  },
+  {
+    "question_text": "Which technique is used to get information from a series of referenced fields from different tables?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Table-Walking"},
+      {"option_id": "B", "option_text": "Sys_ID Pulling"},
+      {"option_id": "C", "option_text": "Dot-Walking"},
+      {"option_id": "D", "option_text": "Record-Hopping"}
+    ],
+    "correct_options": ["C"]
+  },
+  {
+    "question_text": "What is a schema map?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "A schema map enables administrators to define records from specific tables as trouble sources for Configuration Items"},
+      {"option_id": "B", "option_text": "A schema map graphically organizes the visual task boards for the CMDB"},
+      {"option_id": "C", "option_text": "A schema map graphically displays the Configuration Items that support a business service"},
+      {"option_id": "D", "option_text": "A schema map displays the details of tables and their relationships in a visual manner, allowing administrators to view and easily access different parts of the database schema"}
+    ],
+    "correct_options": ["D"]
+  },
+  {
+    "question_text": "Which one of the following statements best describes the purpose of an Update Set?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "An Update Set allows administrators to group a series of changes into a named set and then move this set as a unit to other systems"},
+      {"option_id": "B", "option_text": "By default, an Update Set includes customizations, Business Rules, and homepages"},
+      {"option_id": "C", "option_text": "An Update Set is a group of customizations that is moved from Production to Development"},
+      {"option_id": "D", "option_text": "By default, the changes included in an Update Set are visible only in the instance to which they are applied"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "Which of the following can be customized through the Basic Configuration UI 16 module? (Choose three.)",
+    "question_type": "multiple",
+    "options": [
+      {"option_id": "A", "option_text": "Banner Image"},
+      {"option_id": "B", "option_text": "Record Number Format"},
+      {"option_id": "C", "option_text": "Browser Tab Title"},
+      {"option_id": "D", "option_text": "System Date Format"},
+      {"option_id": "E", "option_text": "Form Header Size"}
+    ],
+    "correct_options": ["A", "C", "D"]
+  },
+  {
+    "question_text": "What is the function of user impersonation?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Testing and visibility"},
+      {"option_id": "B", "option_text": "Activate verbose logging"},
+      {"option_id": "C", "option_text": "View custom perspectives"},
+      {"option_id": "D", "option_text": "Unlock Application master list"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+    "question_text": "What information does the System Dictionary contain?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "The human-readable labels and language settings"},
+      {"option_id": "B", "option_text": "The definition for each table and column"},
+      {"option_id": "C", "option_text": "The information on how tables relate to each other"},
+      {"option_id": "D", "option_text": "The language dictionary used for spell checking"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "When working on a form, what is the difference between Insert and Update operations?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Insert creates a new record and Update saves changes, both remain on the form"},
+      {"option_id": "B", "option_text": "Insert creates a new record and Update saves changes, both exit the form"},
+      {"option_id": "C", "option_text": "Insert saves changes and exits the form, Update saves changes and remains on the form"},
+      {"option_id": "D", "option_text": "Insert saves changes and remains on the form, Update saves changes and exits the form"}
+    ],
+    "correct_options": ["B"]
+  },
+  {
+    "question_text": "How is the Event Log different from the Event Registry?",
+    "question_type": "single",
+    "options": [
+      {"option_id": "A", "option_text": "Event Log contains generated Events, the Event Registry is a table of Event definitions"},
+      {"option_id": "B", "option_text": "Event Log is formatted in the Log style, the Event Registry displays different fields"},
+      {"option_id": "C", "option_text": "Event Log lists Events that were triggered by integrations, the Event Registry lists the Events that were triggered during the day (24-hour period)"},
+      {"option_id": "D", "option_text": "Event Log is the same as the Event Registry"}
+    ],
+    "correct_options": ["A"]
+  },
+  {
+  "question_text": "What is a Dictionary Override?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A Dictionary Override is an incoming customer update in an Update Set which applies to the same objects as a newer local customer update"},
+    {"option_id": "B", "option_text": "A Dictionary Override is the addition, modification, or removal of anything that could have an effect on IT services"},
+    {"option_id": "C", "option_text": "A Dictionary Override is a task within a flow that requests an action before the flow can continue"},
+    {"option_id": "D", "option_text": "A Dictionary Override sets field properties in extended tables"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Which group of permissions is used to control Application and Module access?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Access Control Rules"},
+    {"option_id": "B", "option_text": "UI Policies"},
+    {"option_id": "C", "option_text": "Roles"},
+    {"option_id": "D", "option_text": "Assignment Rules"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What is a Record Producer?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A Record Producer is a type of Catalog Item that is used for Requests, not Services"},
+    {"option_id": "B", "option_text": "A Record Producer creates user records"},
+    {"option_id": "C", "option_text": "A Record Producer is a type of Catalog Item that provides easy ordering by bundling requests"},
+    {"option_id": "D", "option_text": "A Record Producer is a type of a Catalog Item that allows users to create task-based records from the Service Catalog"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Create Incident, Password Reset, and Report outage: what do these services in the Service Catalog have in common?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "They direct the user to a record producer"},
+    {"option_id": "B", "option_text": "They direct the user to a catalog property"},
+    {"option_id": "C", "option_text": "They direct the user to a catalog UI policy"},
+    {"option_id": "D", "option_text": "They direct the user to a catalog client script"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What is the Import Set Table?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A table where data will be placed, post-transformation"},
+    {"option_id": "B", "option_text": "A table that determines relationships"},
+    {"option_id": "C", "option_text": "A staging area for imported records"},
+    {"option_id": "D", "option_text": "A repository for Update Set information"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What is a characteristic of importing data into ServiceNow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "An existing Transform Map can be used one time on the same import set"},
+    {"option_id": "B", "option_text": "Coalesce fields are used only after running Transform"},
+    {"option_id": "C", "option_text": "Any user can manage and set up import sets"},
+    {"option_id": "D", "option_text": "An existing Transform Map can be used multiple times on the same import set"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "What module in the Service Catalog application does an Administrator access to begin creating a new item?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Maintain Categories"},
+    {"option_id": "B", "option_text": "Maintain Items"},
+    {"option_id": "C", "option_text": "Content Items"},
+    {"option_id": "D", "option_text": "Items"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "Which of the following allows a user to edit field values in a list without opening the form?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Data Editor"},
+    {"option_id": "B", "option_text": "Edit Menu"},
+    {"option_id": "C", "option_text": "List Editor"},
+    {"option_id": "D", "option_text": "Form Designer"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Which three Variable Types can be added to a Service Catalog Item?",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "True/False, Multiple Choice, and Ordered"},
+    {"option_id": "B", "option_text": "True/False, Checkbox, and Number List"},
+    {"option_id": "C", "option_text": "Number List, Single Line Text, and Reference"},
+    {"option_id": "D", "option_text": "Multiple Choice, Select Box, and Checkbox"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "How are Workflows moved between instances?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Workflows are moved using Update Sets"},
+    {"option_id": "B", "option_text": "Workflows are moved using Transform Maps"},
+    {"option_id": "C", "option_text": "Workflows are moved using Application Sets"},
+    {"option_id": "D", "option_text": "Workflows cannot be moved between instances"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "The baseline Service Catalog homepage contains links to which of the following components?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Record Producers, Order Guides, and Catalog Items"},
+    {"option_id": "B", "option_text": "Order Guides, Item Variables, and flows"},
+    {"option_id": "C", "option_text": "Order Guides, Catalog Items, and flows"},
+    {"option_id": "D", "option_text": "Record Producers, Order Guides, and Item Variables"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "Which of the following statements is true when a new table is created by extending another table?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "The new table archives the parent table and assumed its roles in the database"},
+    {"option_id": "B", "option_text": "The new table inherits all of the Business Rules, Client Scripts, and UI Policies of the parent table, but none of the existing fields"},
+    {"option_id": "C", "option_text": "The new table inherits all of the fields of the parent table and can also contain new fields unique to itself"},
+    {"option_id": "D", "option_text": "The new table inherits all of the fields, but does not inherit Access Control rules, Client Scripts, and UI Policies of the parent table"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Where can Admins check which release is running on a ServiceNow instance?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Memory Stats module"},
+    {"option_id": "B", "option_text": "Stats module"},
+    {"option_id": "C", "option_text": "System.upgraded table"},
+    {"option_id": "D", "option_text": "Transactions log"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "A knowledge article must be which of the following states to display to a user?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Published"},
+    {"option_id": "B", "option_text": "Drafted"},
+    {"option_id": "C", "option_text": "Retired"},
+    {"option_id": "D", "option_text": "Reviewed"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What is the name of the conversational bot platform that provides assistance to help users obtain information, make decisions, and perform common tasks?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Answer Agent"},
+    {"option_id": "B", "option_text": "Live Feed"},
+    {"option_id": "C", "option_text": "Virtual Agent"},
+    {"option_id": "D", "option_text": "Connect Chat"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What is the purpose of a Related List?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "To create a one-to-many relationship"},
+    {"option_id": "B", "option_text": "To dot-walk to a core table"},
+    {"option_id": "C", "option_text": "To present related fields"},
+    {"option_id": "D", "option_text": "To present related records"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Which one of the following statements describes the purpose of a Service Catalog flow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A Service Catalog flow generates three basic components: item variable types, tasks, and approvals"},
+    {"option_id": "B", "option_text": "Although a Service Catalog flow cannot send notifications, the flow drives complex fulfillment processes"},
+    {"option_id": "C", "option_text": "A Service Catalog flow is used to drive complex fulfillment processes and sends notifications to defined users or groups"},
+    {"option_id": "D", "option_text": "A Service Catalog flow generates three basic components: item variable types, tasks, and notifications"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Which term best describes something that is created, has worked performed upon it, and is eventually moved to a state of closed?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Report"},
+    {"option_id": "B", "option_text": "Flow"},
+    {"option_id": "C", "option_text": "Event"},
+    {"option_id": "D", "option_text": "Task"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Which are valid ServiceNow User Authentication Methods? (Choose three.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "XML feed"},
+    {"option_id": "B", "option_text": "Local database"},
+    {"option_id": "C", "option_text": "LDAP"},
+    {"option_id": "D", "option_text": "SSO"},
+    {"option_id": "E", "option_text": "FTP authentication"}
+  ],
+  "correct_options": ["B", "C", "D"]
+},
+{
+  "question_text": "Access Control rules may be defined with which of the following permission requirements? (Choose three.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "Roles"},
+    {"option_id": "B", "option_text": "Conditional Expressions"},
+    {"option_id": "C", "option_text": "Assignment Rules"},
+    {"option_id": "D", "option_text": "Scripts"},
+    {"option_id": "E", "option_text": "User Criteria"},
+    {"option_id": "F", "option_text": "Groups"}
+  ],
+  "correct_options": ["A", "B", "D"]
+},
+{
+  "question_text": "Which section of the ServiceNow UI allows you to perform a global search?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Application Navigator"},
+    {"option_id": "B", "option_text": "Banner frame"},
+    {"option_id": "C", "option_text": "List pane"},
+    {"option_id": "D", "option_text": "Content frame"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "How do you make a list filter available to everyone?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Make active, assign a name, and save"},
+    {"option_id": "B", "option_text": "Assign a group, set visibility, and save"},
+    {"option_id": "C", "option_text": "Assign a name, set visibility, and save"},
+    {"option_id": "D", "option_text": "Make active, set visibility, and save"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What would NOT appear in the Application Navigator if 'service' is typed into the filter field?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Configuration > Business Services"},
+    {"option_id": "B", "option_text": "Self-Service > Knowledge"},
+    {"option_id": "C", "option_text": "Service Portal > Widgets"},
+    {"option_id": "D", "option_text": "Incident > Assigned to me"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Which of the following is used to categorize, flag, and locate records?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Search"},
+    {"option_id": "B", "option_text": "Favorites"},
+    {"option_id": "C", "option_text": "Tags"},
+    {"option_id": "D", "option_text": "Bookmarks"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Which tool should be used to populate commonly used fields in a form?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Template"},
+    {"option_id": "B", "option_text": "Reference Qualifier"},
+    {"option_id": "C", "option_text": "Formatter"},
+    {"option_id": "D", "option_text": "Assignment Rule"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "How is a group defined in ServiceNow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A group is one record stored in the Group Type [sys_user_group_type] table"},
+    {"option_id": "B", "option_text": "A group is one record stored in the Group [sys_user_group] table"},
+    {"option_id": "C", "option_text": "A group defines a set of users that share the same location"},
+    {"option_id": "D", "option_text": "A group defines a set of users that share the same job title"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "What is a role in ServiceNow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A role is one record in the Role [user_sys_role] table"},
+    {"option_id": "B", "option_text": "A role is a set of modules for a particular application"},
+    {"option_id": "C", "option_text": "A role is one record in the Role [sys_user_role] table"},
+    {"option_id": "D", "option_text": "A role is a persona used in Live Feed Chat"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What is a Notification?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A new Knowledge article created by a Business Rule"},
+    {"option_id": "B", "option_text": "A tool for alerting users that events that concern them have occurred"},
+    {"option_id": "C", "option_text": "A message through Connect related to a Change Request"},
+    {"option_id": "D", "option_text": "An email file attachment"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "Which one of the following is NOT a type of Visual Task Board?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Flexible"},
+    {"option_id": "B", "option_text": "Freeform"},
+    {"option_id": "C", "option_text": "Feature"},
+    {"option_id": "D", "option_text": "Guided boards"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What is (are) best practice(s) regarding users/groups/roles? (Choose two.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "You should never assign roles to groups."},
+    {"option_id": "B", "option_text": "You should assign roles to users."},
+    {"option_id": "C", "option_text": "You should add users to groups."},
+    {"option_id": "D", "option_text": "You should assign roles to groups."}
+  ],
+  "correct_options": ["C", "D"]
+},
+{
+  "question_text": "What are two ways to generate an Event? (Choose two.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "Business Rule"},
+    {"option_id": "B", "option_text": "Workflow"},
+    {"option_id": "C", "option_text": "Log entry"},
+    {"option_id": "D", "option_text": "Knowledge article publication"}
+  ],
+  "correct_options": ["A", "B"]
+},
+{
+  "question_text": "Which core table in the ServiceNow platform provides a series of standard fields used on each of the tables that extend it, such as the Incident [incident] and Problem [problem] tables?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Task [task]"},
+    {"option_id": "B", "option_text": "Assignment [assignment]"},
+    {"option_id": "C", "option_text": "Service [service]"},
+    {"option_id": "D", "option_text": "Workflow [workflow]"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "Which of the following statements describes how data is organized in a table?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "A column is a field in the database and a record is one user"},
+    {"option_id": "B", "option_text": "A column is one field and a record is one row"},
+    {"option_id": "C", "option_text": "A column is one field and a record is one column"},
+    {"option_id": "D", "option_text": "A column contains data from one user and a record is one set of fields"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "What is a sys_id?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Unique 32-character identifier that is assigned to every record"},
+    {"option_id": "B", "option_text": "A client-side Business Rule"},
+    {"option_id": "C", "option_text": "A server-side Business Rule"},
+    {"option_id": "D", "option_text": "Unique 64-character identifier that is assigned to every record"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "When creating a global custom table named `abc`, what is the table name that is automatically assigned by the platform?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "snc_abc"},
+    {"option_id": "B", "option_text": "abc"},
+    {"option_id": "C", "option_text": "u_abc"},
+    {"option_id": "D", "option_text": "sys_abc"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Access Control rules may provide access security for which of the following database objects?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "For a specific role, group, or user"},
+    {"option_id": "B", "option_text": "For a specific row, column, or table"},
+    {"option_id": "C", "option_text": "For specific groups"},
+    {"option_id": "D", "option_text": "For a specific CMDB Configuration item"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "What is the primary application used to load data into ServiceNow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Service Level Management"},
+    {"option_id": "B", "option_text": "Configuration"},
+    {"option_id": "C", "option_text": "System Import Sets"},
+    {"option_id": "D", "option_text": "System Update Sets"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "Which of the following steps can be used to import new data into ServiceNow from a spreadsheet?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Select Data Source, Schedule Transform"},
+    {"option_id": "B", "option_text": "Load Data, Create Transform Map, Run Transform"},
+    {"option_id": "C", "option_text": "Define Data Source, Select Transform Map, Run Transform"},
+    {"option_id": "D", "option_text": "Select Import Set, Select Transform Map, Run Transform"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "Which tool is used for creating dependencies between configuration items in the CMDB?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "CI Relationship Editor"},
+    {"option_id": "B", "option_text": "CMDB Builder"},
+    {"option_id": "C", "option_text": "CI Service Manager"},
+    {"option_id": "D", "option_text": "Cl Class Manager"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What is the difference between a UI Policy and Data Policy?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Data Policies run when data is entered through the form, by an Import Set, or by web services, while UI Policies are set only by web services"},
+    {"option_id": "B", "option_text": "Data Policies can be converted into UI Policies, but UI Policies cannot be converted into Data Policies"},
+    {"option_id": "C", "option_text": "Data Policies run regardless of how data is entered into ServiceNow, while UI Policies are used for form interactions"},
+    {"option_id": "D", "option_text": "Data Policies run only after UI Policies run successfully"}
+  ],
+  "correct_options": ["C"]
+}
+];
+        let currentQuestionIndex = 0;
+let score = 0;
+let selectedQuestions = [];
+let answeredQuestions = new Set();
+let canSpeak = true;
+
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.pitch = 1;
+        utterance.rate = 1;
+        utterance.volume = 1;
+        window.speechSynthesis.speak(utterance);
+    } else if(canSpeak) {
+        canSpeak = false;
+        alert('Text-to-speech not supported for you!');
+    }
+}
+
+function startQuiz() {
+    document.querySelector('.maincontainer').style.display = 'none';
+    document.querySelector('.container').style.display = 'block';
+    loadQuestion();
+    updateStatus();
+}
+
+function loadQuestion() {
+    const quizContainer = document.getElementById('quiz-container');
+    quizContainer.innerHTML = '';
+
+    const questionData = selectedQuestions[currentQuestionIndex];
+    const questionElement = document.createElement('div');
+    questionElement.classList.add('question');
+    questionElement.innerText = questionData.question_text;
+
+    speak(questionData.question_text);
+
+    const optionsElement = document.createElement('ul');
+    optionsElement.classList.add('options');
+
+    let options = questionData.options;
+    if (document.getElementById('jumbleOptions').checked) {
+        options = shuffleArray([...options]);
+    }
+
+    options.forEach(option => {
+        const optionElement = document.createElement('li');
+        const inputElement = document.createElement('input');
+        inputElement.type = questionData.question_type === 'single' ? 'radio' : 'checkbox';
+        inputElement.name = 'option';
+        inputElement.id = option.option_id;
+        inputElement.addEventListener('change', () => {
+            document.getElementById('nextBtn').disabled = false;
+        });
+        const labelElement = document.createElement('label');
+        labelElement.htmlFor = option.option_id;
+        labelElement.innerText = option.option_text;
+        optionElement.appendChild(inputElement);
+        optionElement.appendChild(labelElement);
+        optionsElement.appendChild(optionElement);
+    });
+
+    quizContainer.appendChild(questionElement);
+    quizContainer.appendChild(optionsElement);
+
+    document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+    document.getElementById('nextBtn').innerText = currentQuestionIndex === selectedQuestions.length - 1 ? 'Submit' : 'Next';
+    document.getElementById('nextBtn').disabled = true;
+
+    // Reset styles from previous question
+    const allOptions = optionsElement.querySelectorAll('input');
+    allOptions.forEach(option => {
+        option.parentElement.classList.remove('correct', 'wrong');
+        option.checked = false;
+    });
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+    }
+}
+
+function checkAnswer() {
+    const questionData = selectedQuestions[currentQuestionIndex];
+    const optionsElement = document.querySelector('.options');
+    const selectedOptions = optionsElement.querySelectorAll('input:checked');
+
+    let correctCount = 0;
+    selectedOptions.forEach(option => {
+        if (questionData.correct_options.includes(option.id)) {
+            option.parentElement.classList.add('correct');
+            correctCount++;
+        } else {
+            option.parentElement.classList.add('wrong');
+        }
+    });
+
+    if (correctCount > 0 && correctCount === questionData.correct_options.length && !answeredQuestions.has(currentQuestionIndex)) {
+        score++;
+        answeredQuestions.add(currentQuestionIndex);
+    }
+
+    document.getElementById('score').innerText = score;
+
+    if (currentQuestionIndex >= selectedQuestions.length - 1) {
+        setTimeout(showResult, 500);
+    } else {
+        setTimeout(() => {
+            currentQuestionIndex++;
+            loadQuestion();
+            updateStatus();
+        }, 500);
+    }
+}
+
+function updateStatus() {
+    const currentQuestionElement = document.getElementById('currentQuestion');
+    const totalQuestionsElement = document.getElementById('totalQuestions');
+    currentQuestionElement.innerText = currentQuestionIndex + 1;
+    totalQuestionsElement.innerText = selectedQuestions.length;
+}
+
+function showResult() {
+    document.querySelector('.container').style.display = 'none';
+    const resultContainer = document.querySelector('.result');
+    resultContainer.style.display = 'block';
+    resultContainer.querySelector('.score').innerText = score;
+}
+
+function backToMenu() {
+    document.querySelector('.result').style.display = 'none';
+    document.querySelector('.maincontainer').style.display = 'block';
+    score = 0;
+    currentQuestionIndex = 0;
+    selectedQuestions = [];
+    answeredQuestions.clear();
+}
+
+function studyMCQs() {
+    const studyContainer = document.createElement('div');
+    studyContainer.classList.add('container');
+    studyContainer.style.display = 'block';
+    document.body.appendChild(studyContainer);
+
+    quizData.forEach((question, qIndex) => {
+        const questionElement = document.createElement('div');
+        questionElement.classList.add('question');
+        questionElement.innerHTML = `<strong>${qIndex + 1}. ${question.question_text}</strong>`;
+
+        const optionsElement = document.createElement('ul');
+        optionsElement.classList.add('options');
+
+        question.options.forEach((option, oIndex) => {
+            const optionElement = document.createElement('li');
+            const labelElement = document.createElement('label');
+            labelElement.innerText = String.fromCharCode(65 + oIndex) + '. ' + option.option_text;
+            labelElement.style.fontWeight = question.correct_options.includes(option.option_id) ? 'bold' : 'normal';
+            labelElement.style.color = question.correct_options.includes(option.option_id) ? '#50C878' : 'inherit'; // Lighten green
+            optionElement.appendChild(labelElement);
+            optionsElement.appendChild(optionElement);
+        });
+
+        questionElement.appendChild(optionsElement);
+        studyContainer.appendChild(questionElement);
+    });
+
+    const backButton = document.createElement('button');
+    backButton.innerText = 'Back to Main Menu';
+    backButton.onclick = () => {
+        studyContainer.remove();
+        document.querySelector('.maincontainer').style.display = 'block';
+    };
+    studyContainer.appendChild(backButton);
+
+    document.querySelector('.maincontainer').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadQuestion();
+    updateStatus();
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      document.getElementById('nextBtn').click();
+    } else if (event.key === 'Backspace') {
+        document.getElementById('prevBtn').click();
+    }
+});
+    </script>
+</body>
+</html>
