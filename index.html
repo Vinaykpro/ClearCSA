@@ -132,6 +132,10 @@
             text-align: center;
             text-decoration: none;        
         }
+        .questionImage {
+            width:100%;
+            border-radius:10px;
+        }
     </style>
 </head>
 <body>
@@ -1130,9 +1134,258 @@
     {"option_id": "D", "option_text": "Data Policies run only after UI Policies run successfully"}
   ],
   "correct_options": ["C"]
-}
+},
+{
+  "question_text": "Which one of the following is an accurate list of changes that are captured in an Update Set?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Changes made to: tables, forms, schedules, and client scripts"},
+    {"option_id": "B", "option_text": "Changes made to: tables, forms, Business Rules, and data records"},
+    {"option_id": "C", "option_text": "Changes made to: tables, forms, groups, and configuration items (CIs)"},
+    {"option_id": "D", "option_text": "Changes made to: table, forms, views, and fields"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "What are the steps to retrieve an Update Set?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Verify Update Set is Complete, Retrieve, Preview, Apply"},
+    {"option_id": "B", "option_text": "Verify Update Set is Complete, Test Connection, Apply"},
+    {"option_id": "C", "option_text": "Verify Update Set is Complete, Test Connection, Commit"},
+    {"option_id": "D", "option_text": "Verify Update Set is Complete, Retrieve, Preview, Commit"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "IntegrationHub enables execution of third-party APIs as a part of a flow. These integrations are referred to as",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "an action"},
+    {"option_id": "B", "option_text": "a spoke"},
+    {"option_id": "C", "option_text": "a connection"},
+    {"option_id": "D", "option_text": "an integration step"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "Which of the following protects applications by identifying and restricting access to available files and data?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Application Configuration"},
+    {"option_id": "B", "option_text": "Verbose Log"},
+    {"option_id": "C", "option_text": "Access Control Rules"},
+    {"option_id": "D", "option_text": "Application Scope"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Which one statement correctly describes Access Control rule evaluation?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Table access rules are evaluated from the general to the specific"},
+    {"option_id": "B", "option_text": "If more than one rule applies to a record, the older rule is evaluated first"},
+    {"option_id": "C", "option_text": "If a row level rule and a field level rule exist, both rules must be true before an operation is allowed"},
+    {"option_id": "D", "option_text": "The role with the most permissions evaluates the rules first"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "ServiceNow contains a resource which provides the following: \n✑ A standard and shared set of service related definitions across ServiceNow products and platform that will enable and support true service level reporting.\n✑ A CMDB framework across our products and platform that will enable and support multiple configuration strategies. What resource do these statements describe?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Common Services Data Model (CSDM)"},
+    {"option_id": "B", "option_text": "Information Technology Service Management (ITSM)"},
+    {"option_id": "C", "option_text": "Configuration Management Database (CMDB)"},
+    {"option_id": "D", "option_text": "Information Technology Infrastructure Library (ITIL)"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "An IT manager is responsible for the Network and Hardware assignment groups, each group contains 5 team members. These team members are working on many tasks, but the manager cannot see any tasks on the Service Desk > My Groups Work list. What could explain this?",
+  "question_type": "single",
+"image":"https://i.ibb.co/7KhzvQr/IMG-20240721-211406.jpg",
+  "options": [
+    {"option_id": "A", "option_text": "The Service Desk > My Groups Work list shows active work tasks that are not yet assigned."},
+    {"option_id": "B", "option_text": "The manager does not have the itil role."},
+    {"option_id": "C", "option_text": "The manager is not a member of the Service Desk group."},
+    {"option_id": "D", "option_text": "The manager is not a member of the Network and Hardware groups."},
+    {"option_id": "E", "option_text": "The Assignment Group manager field is empty."}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What do you need to do before you can use an Application-based trigger in your flow?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Activate application trigger spoke"},
+    {"option_id": "B", "option_text": "Activate trigger security rules"},
+    {"option_id": "C", "option_text": "Activate application spoke, and plug-ins as needed"},
+    {"option_id": "D", "option_text": "Assign Application trigger role [sn_app_trigger_write] to SME"},
+    {"option_id": "E", "option_text": "Activate application plugins only"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "The ServiceNow platform includes which types of interfaces? (Choose three.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "Now Mobile Apps"},
+    {"option_id": "B", "option_text": "Agent Control Center"},
+    {"option_id": "C", "option_text": "Back Office Dashboard"},
+    {"option_id": "D", "option_text": "Service Portals"},
+    {"option_id": "E", "option_text": "Now Platform® User Interfaces"},
+    {"option_id": "F", "option_text": "Field Service Taskboard"}
+  ],
+  "correct_options": ["A", "D", "E"]
+},
+{
+  "question_text": "Which of the following are not included in an Update Set, by default? (Choose four.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "Homepages"},
+    {"option_id": "B", "option_text": "Data"},
+    {"option_id": "C", "option_text": "Published Workflows"},
+    {"option_id": "D", "option_text": "Business Rules"},
+    {"option_id": "E", "option_text": "Schedules"},
+    {"option_id": "F", "option_text": "Database changes"},
+    {"option_id": "G", "option_text": "Related Lists"},
+    {"option_id": "H", "option_text": "Report Definitions"},
+    {"option_id": "I", "option_text": "Scheduled Jobs"},
+    {"option_id": "J", "option_text": "Client Scripts"},
+    {"option_id": "K", "option_text": "Views"}
+  ],
+  "correct_options": ["B", "E", "F", "I"]
+},
+{
+  "question_text": "You are showing your customer a new form that you have created for their new application. They would like to add a field to the form. Where could you do that? (Choose two.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "Select Fields and Columns module"},
+    {"option_id": "B", "option_text": "Right click on form header, select Configure > Form Layout"},
+    {"option_id": "C", "option_text": "Click on context menu, select Configure > Form Designer"},
+    {"option_id": "D", "option_text": "Select Field Class Manager module"}
+  ],
+  "correct_options": ["B", "C"]
+},
+{
+  "question_text": "Which ServiceNow resource is a framework that ensures the data your ServiceNow application requires maps correctly to the appropriate CMDB tables?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Common Service Data Model (CSDM)"},
+    {"option_id": "B", "option_text": "Service Mapping Utility (SMU)"},
+    {"option_id": "C", "option_text": "Service Schema Map (SSM)"},
+    {"option_id": "D", "option_text": "CMDB Class Manager (CMDBCM)"},
+    {"option_id": "E", "option_text": "CI Class Manager (CICM)"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What do you activate when you want to add applications or functionality within your development instance?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "App Package"},
+    {"option_id": "B", "option_text": "Updated Pack"},
+    {"option_id": "C", "option_text": "Patch"},
+    {"option_id": "D", "option_text": "Plugin"},
+    {"option_id": "E", "option_text": "App Updated Set"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "What field contains a record's 32-character, unique identifier?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "sn_rec_id"},
+    {"option_id": "B", "option_text": "rec_id"},
+    {"option_id": "C", "option_text": "u_id"},
+    {"option_id": "D", "option_text": "sys_id"},
+    {"option_id": "E", "option_text": "sn_gu_id"},
+    {"option_id": "F", "option_text": "sn_sys_id"},
+    {"option_id": "G", "option_text": "id"}
+  ],
+  "correct_options": ["D"]
+},
+{
+  "question_text": "Your company is giving all first line workers a special T-shirt as a recognition for their hard work. Management team wants a way for employees to order the T-shirt, with the ability to specify the preferred size and color. How would you ensure that only first line workers (non-managers) can submit the order?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Create Record Producer and use the Available For list to specify First Line [sn_first_line] role"},
+    {"option_id": "B", "option_text": "Create Catalog Item and use the Not Available list to specify the Manager Group"},
+    {"option_id": "C", "option_text": "Create Catalog Item and use the Available For list to specify ITIL [itil] role"},
+    {"option_id": "D", "option_text": "Create Order Guide and use the User Criteria list to specify First Line [sn_first_line] role"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "What is used frequently to move customizations from one instance to another?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Update Sets"},
+    {"option_id": "B", "option_text": "Code Sets"},
+    {"option_id": "C", "option_text": "Update Packs"},
+    {"option_id": "D", "option_text": "Configuration Logs"},
+    {"option_id": "E", "option_text": "Remote Sets"},
+    {"option_id": "F", "option_text": "Local Sets"},
+    {"option_id": "G", "option_text": "Code Packs"}
+  ],
+  "correct_options": ["A"]
+},
+{
+  "question_text": "What icon do you use to change the label on a Favorite?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Clock"},
+    {"option_id": "B", "option_text": "Hamburger"},
+    {"option_id": "C", "option_text": "Pencil"},
+    {"option_id": "D", "option_text": "Three dots"},
+    {"option_id": "E", "option_text": "Triangle"},
+    {"option_id": "F", "option_text": "Star"}
+  ],
+  "correct_options": ["C"]
+},
+{
+  "question_text": "What needs to be specified, when creating a Business Rule? (Choose four.)",
+  "question_type": "multiple",
+  "options": [
+    {"option_id": "A", "option_text": "UI action"},
+    {"option_id": "B", "option_text": "Table"},
+    {"option_id": "C", "option_text": "Fields to update"},
+    {"option_id": "D", "option_text": "Who can run"},
+    {"option_id": "E", "option_text": "Script to run"},
+    {"option_id": "F", "option_text": "Application scope"},
+    {"option_id": "G", "option_text": "Update set"},
+    {"option_id": "H", "option_text": "Timing"},
+    {"option_id": "I", "option_text": "Condition to evaluate"}
+  ],
+  "correct_options": ["B", "E", "H", "I"]
+},
+{
+  "question_text": "What feature can track the amount of time that a task has been open, to ensure that tasks are completed within an allotted time?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Task Escalation Clock"},
+    {"option_id": "B", "option_text": "Service Level Agreements"},
+    {"option_id": "C", "option_text": "Inactivity Monitor"},
+    {"option_id": "D", "option_text": "Response Time Clock"},
+    {"option_id": "E", "option_text": "Business Time Remaining"}
+  ],
+  "correct_options": ["B"]
+},
+{
+  "question_text": "What is a quick way to create a report from a list view?",
+  "question_type": "single",
+  "options": [
+    {"option_id": "A", "option_text": "Click on filter breadcrumb, drag and drop on the Report > Create New module"},
+    {"option_id": "B", "option_text": "Click Funnel, define filter conditions, click Create Report"},
+    {"option_id": "C", "option_text": "Click Context Menu, select Create Report"},
+    {"option_id": "D", "option_text": "Apply filter, right click on column header, select Bar Chart"},
+    {"option_id": "E", "option_text": "Apply filter, right click on column header, select Create Report"}
+  ],
+  "correct_options": ["E"]
+},
 ];
-        let currentQuestionIndex = 0;
+let currentQuestionIndex = 0;
 let score = 0;
 let selectedQuestions = [];
 let answeredQuestions = new Set();
@@ -1195,6 +1448,12 @@ function loadQuestion() {
     });
 
     quizContainer.appendChild(questionElement);
+    if ("image" in questionData) {
+        const img = document.createElement('img');
+        img.classList.add('questionImage');
+        img.src = questionData.image;
+        quizContainer.appendChild(img);
+    }
     quizContainer.appendChild(optionsElement);
 
     document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
@@ -1291,6 +1550,14 @@ function studyMCQs() {
         questionElement.classList.add('question');
         questionElement.innerHTML = `<strong>${qIndex + 1}. ${question.question_text}</strong>`;
 
+        if ("image" in question) {
+        const img = document.createElement('img');
+        img.classList.add('questionImage');
+        img.src = question.image;
+        img.style.marginTop = "10px";
+        questionElement.appendChild(img);
+        }
+        
         const optionsElement = document.createElement('ul');
         optionsElement.classList.add('options');
 
